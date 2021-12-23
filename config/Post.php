@@ -8,7 +8,7 @@ class Parameter
     /**
      * @var array
      */
-    private $superglobal;
+    private array $superglobal;
 
     /**
      * @param $superglobal
@@ -32,7 +32,7 @@ class Parameter
         $this->superglobal[$name] = $value;
     }
 
-    public function all()
+    public function all(): array
     {
         return $this->superglobal;
     }
