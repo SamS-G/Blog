@@ -2,15 +2,16 @@
 
     namespace App\src\controller;
 
-    use App\config\Parameter;
+    use App\config\Post;
+    use App\src\model\Comment;
+    use App\src\model\User;
+    use DateTime;
     use Swift_Mailer;
     use Swift_Message;
     use Swift_SmtpTransport;
 
     class FrontController extends Controller
     {
-        private $errors = 0;
-
         /**
          * Affiche les articles publiés par ordre chronologique
          */
@@ -24,25 +25,25 @@
 
         /**
          * Permet à un nouvel utilisateur de s'enregistrer et laisser des commentaires
-         * @param Parameter $superGlobPost
+         * @param Post $post
+         * @param User $user
          */
-        public function register(Parameter $superGlobPost)
+        public function register(Post $post, User $user)
         {
-            if ($superGlobPost->getParameter('submit')) {
-                $this->validateUsername($superGlobPost);
-                $this->validateEmail($superGlobPost);
-                $this->validatePassword($superGlobPost);
-                if ($this->errors === 0) {
-                    $token = $this->generateToken(60);
-                    $createdAt = new \DateTime();
-                    $this->userDAO->register($superGlobPost, $createdAt->format('Y-m-d H:i'), $token);
+            if ($post->getPostParam('submit')) {
+                $user->validateUsername($post);
+                $user->validateEmail($post);
+                $user->validatePassword($post);
 
+                if (isset($errors) && $errors === 0) {
+                    $token = $this->generateToken();
+                    $createdAt = new DateTime();
+                    $this->userDAO->register($post, $createdAt->format('Y-m-d H:i'), $token);
                     $this->session->set('register', "Votre inscription s'est bien déroulée, pensez à activer votre compte");
-                    $email_recipient = $superGlobPost->getParameter('email');
+                    $email_recipient = $post->getPostParam('email');
                     $user_id = $this->userDAO->lastId();
                     $this->sendMail($token, $email_recipient, $user_id);
                     header("Location: ../public/index.php");
-                    exit();
                 } else {
                     $this->session->set('register_error', "Une erreur est survenu dans votre inscription, veuillez recommencer");
                     header("Location: ../public/index.php?route=register");
@@ -54,64 +55,13 @@
         }
 
         /**
-         * Vérifie que les contraintes de longueurs et d'unicité soient respectées pour le nom d'utilisateur
-         * @param Parameter $superGlobPost
-         */
-        private function validateUsername(Parameter $superGlobPost)
-        {
-            $result = $this->validation->validate('username', $superGlobPost, 'username');
-
-            if ($result['usernameDuplicate']) {
-                $this->session->set('usernameDuplicate', "Nom d'utilisateur déjà utilisé");
-                $this->errors++;
-            } elseif ($result['username']['max'] + $result['username']['min'] > 0) {
-                $this->session->set('usernameConstraint', "Le nom d'utilisateur ne respect pas les contraintes de longueur");
-                $this->errors++;
-            }
-        }
-
-        /**
-         * Vérifie que les contraintes de longueurs et d'unicité soient respectées pour l'adresse mail
-         * @param Parameter $superGlobPost
-         */
-        private function validateEmail(Parameter $superGlobPost)
-        {
-            $result = $this->validation->validate('email', $superGlobPost, 'email');
-
-            if ($result['email']['max'] + $result['email']['min'] > 0) {
-                $this->session->set('mailConstraint', "L'email ne respect pas les contraintes, min 5, max 255 caractères");
-                $this->errors++;
-            } elseif ($result['emailDuplicate']) {
-                $this->session->set('mailDuplicate', "Cet email est déjà utilisé !");
-                $this->errors++;
-            }
-        }
-
-        /**
-         * Vérifie que les contraintes de longueur et de format soient respectées pour le mot de passe
-         * @param Parameter $superGlobPost
-         */
-        private function validatePassword(Parameter $superGlobPost)
-        {
-            $result = $this->validation->validate('password', $superGlobPost, 'password');
-            if (!empty($result['password']['regex'])) {
-                $this->session->set('passwordRegex', "Le mots de passe ne respect pas les contraintes");
-                $this->errors++;
-            } elseif ($superGlobPost->getParameter('password') != $superGlobPost->getParameter('confirm_pass')) {
-                $this->session->set('passwordDuplicate', "Les deux mots de passe ne sont pas identiques");
-                $this->errors++;
-            }
-        }
-
-        /**
          * Génère le Token utilisé pour la validation de l'adresse mail
-         * @param $length
          * @return false|string
          */
-        private function generateToken($length)
+        private function generateToken()
         {
             $alphabet = "0123456789azertyuiopqsdfghjklmwxcvbnAZERTYUIOPQSDFGHJKLMWXCVBN";
-            return substr(str_shuffle(str_repeat($alphabet, $length)), 0, $length);
+            return substr(str_shuffle(str_repeat($alphabet, 60)), 0, 60);
         }
 
         /**
@@ -160,13 +110,13 @@ A bientôt pour suivre l\'histoire de mon dernier roman : Hiver Arctique
 
         /**
          * Valide l'email de l'utilisateur
-         * @param Parameter $getData
+         * @param Post $getData
          */
-        public function validateAccount(Parameter $getData)
+        public function validateAccount(Post $getData)
         {
-            $dbToken = $this->userDAO->getToken($getData->getParameter('id'));
-            if ($getData->getParameter('token') === $dbToken['token']) {
-                $this->userDAO->activateAccount($getData->getParameter('id'));
+            $dbToken = $this->userDAO->getToken($getData->getPostParam('id'));
+            if ($getData->getPostParam('token') === $dbToken['token']) {
+                $this->userDAO->activateAccount($getData->getPostParam('id'));
                 $this->session->set('activate', 'Votre compte a bien été activé, vous pouvez vous connecter immédiatement');
             } else {
                 $this->session->set('activate', "Erreur dans l'activation de votre compte, veuillez contacter l'administrateur");
@@ -177,20 +127,20 @@ A bientôt pour suivre l\'histoire de mon dernier roman : Hiver Arctique
 
         /**
          * Permet à un utilisateur de se loguer
-         * @param Parameter $superGlobalData
+         * @param Post $postData
          */
-        public function login(Parameter $superGlobalData)
+        public function login(Post $postData)
         {
-            if ($superGlobalData->getParameter('submit')) {
-                $sqlResult = $this->userDAO->login($superGlobalData);
-                $passwordEnter = $superGlobalData->getParameter('password');
+            if ($postData->getPostParam('submit')) {
+                $sqlResult = $this->userDAO->login($postData);
+                $passwordEnter = $postData->getPostParam('password');
 
                 if (password_verify($passwordEnter, $sqlResult['password']) && $sqlResult['status'] === '1') {
                     $this->session->set('loginWelcome', 'Content de vous revoir !');
                     $this->session->set('id', $sqlResult['id']);
                     $this->session->set('email', $sqlResult['email']);
                     $this->session->set('status', (int)$sqlResult['status']);
-                    $this->session->set('username', $superGlobalData->getParameter('username'));
+                    $this->session->set('username', $postData->getPostParam('username'));
                     $this->session->set('role', (int)$sqlResult['role']);
                     header('Location:../public/index.php');
                     exit();
@@ -205,27 +155,27 @@ A bientôt pour suivre l\'histoire de mon dernier roman : Hiver Arctique
 
         /**
          * Permet de signaler un commentaire jugé inapproprié
-         * @param Parameter $getData
+         * @param Post $postData
          */
-        public function flagComment(Parameter $getData)
+        public function flagComment(Post $postData)
         {
             if (!empty($this->session->get('username'))) {
-                $commentId = $getData->getParameter('id');
+                $commentId = $postData->getPostParam('id');
                 $this->commentDAO->flagOrAllowComment($commentId, 1);
                 $this->session->set('flagSuccess', 'Le commentaire a bien été signalé');
             } else {
                 $this->session->set('flagConnect', 'Vous devez être connecté pour signaler un commentaire.');
             }
-            $this->singleArticle($getData);
+            $this->singleArticle($postData);
         }
 
         /**
          * Gère l'affichage d'un article en particulier
-         * @param Parameter $articleId
+         * @param Post $postData
          */
-        public function singleArticle(Parameter $articleId)
+        public function singleArticle(Post $postData)
         {
-            $id = $articleId->getParameter('ArticleId');
+            $id = $postData->getPostParam('ArticleId');
             $singleArticle = $this->articleDAO->getArticle($id);
             $comments = $this->commentDAO->getComments($id);
             $this->view->render('singleArticle', [
@@ -235,47 +185,31 @@ A bientôt pour suivre l\'histoire de mon dernier roman : Hiver Arctique
 
         /**
          * Permet d'ajouter un commentaire à un article
-         * @param Parameter $postData
+         * @param Post $postData
          */
-        public function addComment(Parameter $postData)
+        public function addComment(Post $postData, Comment $comment)
         {
-            if ($postData->getParameter('submit')) {
+            if ($postData->getPostParam('submit')) {
                 if (!empty($this->session->get('username'))) {
-                    $checkError = $this->validation->validate('comment', $postData, 'content');
+                    $checkError = $comment->$comment->validate('comment', $postData, 'content');
 
                     if (array_sum($checkError['content']) === 0) {
-                        $article_id = $postData->getParameter('ArticleId');
+                        $article_id = $postData->getPostParam('ArticleId');
                         $user_id = $this->session->get('id');
-                        $time = new \DateTime();
+                        $time = new DateTime();
                         $created_at = $time->format('Y-m-d H:i');
-                        $content = $postData->getParameter('content');
+                        $content = $postData->getPostParam('content');
                         $this->commentDAO->addComment($article_id, $user_id, $created_at, $content);
                         $this->session->set('addComment', "Votre commentaire a bien été ajouté, merci !");
-                        header('Location:../public/index.php');
-                        exit();
+
                     } else {
                         $this->session->set('error_comment', "Vérifiez que le champ ne soit pas vide ou ne dépasse pas les 255 caractères");
-                        header('Location:../public/index.php');
-                        exit();
                     }
                 } else {
                     $this->session->set('flagConnectAdd', "Vous devez être connecté pour ajouter un commentaire.");
-                    header('Location:../public/index.php');
-                    exit();
                 }
-            }
-        }
-
-        /**
-         * Assure la validation des contraintes définies sur le contenu
-         * @param Parameter $postData
-         */
-        private function validateContent(Parameter $postData)
-        {
-            $contentValidation = $this->validation->validate('content', $postData, 'content');
-            if (!empty($contentValidation['content']['blank'])) {
-                $this->session->set('contentBlank', "Le champ 'contenu' ne peut être vide !");
-                $this->errors++;
+                header('Location:../public/index.php');
+                exit();
             }
         }
     }

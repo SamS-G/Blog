@@ -2,7 +2,7 @@
 
 namespace App\src\constraint;
 
-use App\config\Parameter;
+use App\config\Post;
 use App\src\DAO\UserDAO;
 
 class UserValidation extends Validation
@@ -16,7 +16,7 @@ class UserValidation extends Validation
         $this->userDAO = new UserDAO();
     }
 
-    public function check(Parameter $superGlobalData, $fieldName)
+    public function check(Post $superGlobalData, $fieldName)
     {
         if ($fieldName === 'username') {
             $fieldValue = $superGlobalData->getParameter($fieldName);
@@ -59,7 +59,7 @@ class UserValidation extends Validation
     }
 
 
-    protected function checkPassword(Parameter $superGlobalData, $password)
+    protected function checkPassword(Post $superGlobalData, $password)
     {
         return ['regex' => $this->constraint->regex($superGlobalData->getParameter($password))];
     }

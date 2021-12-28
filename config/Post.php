@@ -3,37 +3,37 @@
 
 namespace App\config;
 
-class Parameter
+class Post
 {
     /**
      * @var array
      */
-    private array $superglobal;
+    private array $post;
 
     /**
-     * @param $superglobal
+     * @param $post
      */
-    public function __construct($superglobal)
+    public function __construct($post)
     {
-        $this->superglobal = $superglobal;
+        $this->post = $post;
 
     }
 
-    public function getParameter($name)
+    public function getPostParam($name)
     {
-        if (isset($this->superglobal[$name]))
+        if (isset($this->post[$name]))
         {
-            return $this->superglobal[$name];
+            return $this->post[$name];
         }
     }
 
-    public function setParameter($name, $value)
+    public function setPostParam($name, $value)
     {
-        $this->superglobal[$name] = $value;
+        $this->post[$name] = $value;
     }
 
     public function all(): array
     {
-        return $this->superglobal;
+        return $this->post;
     }
 }

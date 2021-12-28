@@ -2,7 +2,7 @@
 
 namespace App\src\constraint;
 
-use App\config\Parameter;
+use App\config\Post;
 
 class ArticleValidation extends Validation
 {
@@ -13,7 +13,7 @@ class ArticleValidation extends Validation
         $this->constraint = new Constraint();
     }
 
-    public function check(Parameter $superGlobalData, $fieldName)
+    public function check(Post $superGlobalData, $fieldName)
     {
         if ($fieldName === 'title' || 'comment') {
             $fieldValue = $superGlobalData->getParameter($fieldName);

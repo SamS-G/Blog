@@ -4,7 +4,9 @@
 namespace App\src\model;
 
 
-class Article
+use App\config\Post;
+
+class Article extends  Model
 {
     private $id;
     private $title;
@@ -12,6 +14,7 @@ class Article
     private $created_at;
     private $updated_at;
     private $published;
+    private int $errors;
 
     /**
      * @return mixed
@@ -127,5 +130,19 @@ class Article
     public function setUserId($user_id)
     {
         $this->user_id = $user_id;
+    }
+
+    /**
+     * Assure la validation des contraintes définies sur le contenu
+     * @param Post $postData
+     * @return int
+     */
+    private function validateContent(Post $postData)
+    {
+        $contentValidation = $this->validation->validate('content', $postData, 'content');
+        if (!empty($contentValidation['content']['blank'])) {
+            $this->session->set('contentBlank', "Le champ 'contenu' ne peut être vide !");
+            return $this->errors++;
+        }
     }
 }

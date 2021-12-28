@@ -4,7 +4,7 @@
 namespace App\src\model;
 
 
-class Comment
+class Comment extends  Model
 {
     private $id;
     private $username;

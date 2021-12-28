@@ -6,37 +6,37 @@ namespace App\config;
 
 class Request
 {
-    public $get;
-    private $post;
-    private $session;
+    public Post $get;
+    private Post $post;
+    private Session $session;
 
     public function __construct()
     {
-        $this->get = new Parameter($_GET);
-        $this->post = new Parameter($_POST);
+        $this->get = new Post($_GET);
+        $this->post = new Post($_POST);
         $this->session = new Session($_SESSION);
     }
 
     /**
-     * @return mixed
+     * @return Post
      */
-    public function getGet()
+    public function getGet(): Post
     {
         return $this->get;
     }
 
     /**
-     * @return mixed
+     * @return Post
      */
-    public function getPost()
+    public function getPost(): Post
     {
         return $this->post;
     }
 
     /**
-     * @return mixed
+     * @return Session
      */
-    public function getSession()
+    public function getSession(): Session
     {
         return $this->session;
     }

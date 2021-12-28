@@ -2,12 +2,12 @@
 
     namespace App\src\DAO;
 
-    use App\config\Parameter;
+    use App\config\Post;
     use App\src\model\User;
 
     class UserDAO extends DAO
     {
-        public function register(Parameter $superGlobalData, $createdAt, $token)
+        public function register(Post $superGlobalData, $createdAt, $token)
         {
             $sql = 'INSERT INTO user (username, password, created_at, email, token) VALUES(:username, :password, :created_at, :email, :token)';
             $this->creatQuery($sql, [
@@ -83,7 +83,7 @@
             return $dbResult->fetch();
         }
 
-        public function login(Parameter $superGlobalData)
+        public function login(Post $superGlobalData)
         {
             $sql = 'SELECT  id, password, role, status, email FROM user WHERE username = :username';
             $data = $this->creatQuery($sql, [
@@ -102,7 +102,7 @@
             }
         }
 
-        public function updatePassword(Parameter $superGlobalData, $username)
+        public function updatePassword(Post $superGlobalData, $username)
         {
             $sql = 'UPDATE user SET password = :password WHERE username = :username';
             $this->creatQuery($sql, [

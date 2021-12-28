@@ -2,7 +2,7 @@
 
     namespace App\src\controller;
 
-    use App\config\Parameter;
+    use App\config\Post;
 
 
     class BackController extends Controller
@@ -44,9 +44,9 @@
 
         /**
          * Permet de mettre à jour le mot de passe du compte
-         * @param Parameter $superGlobalData
+         * @param Post $superGlobalData
          */
-        public function updatePassword(Parameter $superGlobalData)
+        public function updatePassword(Post $superGlobalData)
         {
             if ($superGlobalData->getParameter('submit')) {
                 if ($this->checkLoggedIn()) {
@@ -65,9 +65,9 @@
 
         /**
          * Permet de s'assurer que le mot de passe respecte les contraintes définies
-         * @param Parameter $superGlobalData
+         * @param Post $superGlobalData
          */
-        private function validatePassword(Parameter $superGlobalData)
+        private function validatePassword(Post $superGlobalData)
         {
             $validationData = $this->validation->validate('updatepassword', $superGlobalData, 'password');
 
@@ -83,9 +83,9 @@
 
         /**
          * Permet de mettre à jour l'adresse mail du compte utilisateur
-         * @param Parameter $superGlobalData
+         * @param Post $superGlobalData
          */
-        public function updateEmail(Parameter $superGlobalData)
+        public function updateEmail(Post $superGlobalData)
         {
             if ($superGlobalData->getParameter('submit')) {
                 if ($this->checkLoggedIn()) {
@@ -108,9 +108,9 @@
 
         /**
          * Permet de valider la mise à jour de l'adresse mail du compte utilisateur
-         * @param Parameter $superGlobalData
+         * @param Post $superGlobalData
          */
-        private function validateEmail(Parameter $superGlobalData)
+        private function validateEmail(Post $superGlobalData)
         {
             $validated = $this->validation->validate('updatemail', $superGlobalData, 'email');
 
@@ -130,9 +130,9 @@
 
         /**
          * Permet de supprimer le compte d'un utilisateur (admin uniquement)
-         * @param Parameter $postData
+         * @param Post $postData
          */
-        public function deleteAccount(Parameter $postData)
+        public function deleteAccount(Post $postData)
         {
             if ($postData->getParameter('submit')) {
                 if ($this->checkLoggedIn() && $this->session->get('role') === 1) {
@@ -176,9 +176,9 @@
 
         /**
          * Permet d'activer ou désactiver le compte d'un utilisateur (admin uniquement, 0 = compte désactivé, 1 = compte désactivé)
-         * @param Parameter $postData
+         * @param Post $postData
          */
-        public function banOrActiveUser(Parameter $postData)
+        public function banOrActiveUser(Post $postData)
         {
             if ($this->checkLoggedIn() && $this->session->get('role') === 1) {
                 if ($postData->getParameter('status') === '1') {
@@ -199,9 +199,9 @@
 
         /**
          * Permet d'ajouter un nouvel article
-         * @param Parameter $postData
+         * @param Post $postData
          */
-        public function addArticle(Parameter $postData)
+        public function addArticle(Post $postData)
         {
             if ($postData->getParameter('submit')) {
                 $this->validateArticle($postData);
@@ -226,9 +226,9 @@
 
         /**
          * Permet de valider les contraintes appliquées sur le l'article
-         * @param Parameter $postData
+         * @param Post $postData
          */
-        private function validateArticle(Parameter $postData)
+        private function validateArticle(Post $postData)
         {
             $titleValidation = $this->validation->validate('title', $postData, 'title');
             $contentValidation = $this->validation->validate('content', $postData, 'contents');
@@ -255,10 +255,10 @@
 
         /**
          * Permet d'éditer le contenu d'un article
-         * @param Parameter $postData
-         * @param Parameter $getData
+         * @param Post $postData
+         * @param Post $getData
          */
-        public function editArticle(Parameter $postData, Parameter $getData)
+        public function editArticle(Post $postData, Post $getData)
         {
             if ($postData->getParameter('submit')) {
                 if ($this->checkLoggedIn() && $this->session->get('role') === 1) {
@@ -299,9 +299,9 @@
 
         /**
          * Permet de supprimer un article
-         * @param Parameter $postData
+         * @param Post $postData
          */
-        public function deleteArticle(Parameter $postData)
+        public function deleteArticle(Post $postData)
         {
             if ($postData->getParameter('submit')) {
                 if ($this->checkLoggedIn() && $this->session->get('role') === 1) {
@@ -330,9 +330,9 @@
 
         /**
          * Permet de bloquer ou débloquer l'affichage d'un commentaire (admin)
-         * @param Parameter $postData
+         * @param Post $postData
          */
-        public function moderatedComment(Parameter $postData)
+        public function moderatedComment(Post $postData)
         {
             if ($this->checkLoggedIn() && $this->session->get('role') === 1) {
                 $commentId = $postData->getParameter('id');
@@ -349,9 +349,9 @@
 
         /**
          * Permet de supprimer un commentaire(admin)
-         * @param Parameter $postData
+         * @param Post $postData
          */
-        public function deleteComment(Parameter $postData)
+        public function deleteComment(Post $postData)
         {
             if ($postData->getParameter('submit')) {
                 if ($this->checkLoggedIn() && $this->session->get('role') === 1) {

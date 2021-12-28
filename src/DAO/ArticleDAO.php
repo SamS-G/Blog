@@ -3,18 +3,18 @@
 
 namespace App\src\DAO;
 
-use App\config\Parameter;
+use App\config\Post;
 use App\src\model\Article;
 
 class ArticleDAO extends DAO
 {
     /**
      * Assure la mise à jour d'un article dans la DB
-     * @param Parameter $data
+     * @param Post $data
      * @param $date
      * @param $article_id
      */
-    public function updateArticle(Parameter $data, $date, $article_id)
+    public function updateArticle(Post $data, $date, $article_id)
     {
         $sql = 'UPDATE projet4.article SET title=:title, content=:contents, updated_at=:updated_at, published=:published WHERE id =:article_id';
         $this->creatQuery($sql, [
@@ -29,11 +29,11 @@ class ArticleDAO extends DAO
 
     /**
      * Assure l'ajout d'un article dans la DB
-     * @param Parameter $data
+     * @param Post $data
      * @param $date
      * @param $user_id
      */
-    public function addArticle(Parameter $data, $date, $user_id)
+    public function addArticle(Post $data, $date, $user_id)
     {
         $sql = 'INSERT INTO projet4.article(title, content, created_at, user_id, published) VALUES(:title, :contents, :created_at, :user_id, :published)';
         $this->creatQuery($sql, [
